@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Игра с логическими функциями</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <h1>Hайди среди предложенных имя функции от 2-х аргументов<div  id="binary"></div></h1>
+    <div  id="buttons"></div>
+    <div class="result" id="result"></div>
+    <button class="button1" onclick="playAgain()">Сыграть еще раз</button>
+    <a href="index.html"><button class="button1">Домой</button></a>
+
+    <script>
+        let correctAnswer;
+
+        function toBin(dec) {
+            return dec.toString(2).padStart(4, '0');
+        }
+
+        function generateQuestion() {
+            const x = Math.floor(Math.random() * 16);
+            correctAnswer = x;
+            
+            document.getElementById('binary').innerText = `${toBin(x)}`;
+
+            const buttons = document.getElementById('buttons');
+            buttons.innerHTML = '';
+            for (let i = 0; i < 16; i++) {
+                const button = document.createElement('button1');
+                button.innerText = getFunctionName(i);
+                button.className = 'button1';
+                button.onclick = () => checkAnswer(i);
+                buttons.appendChild(button);
+            }
+        }
+
+        function checkAnswer(selected) {
+            const result = document.getElementById('result');
+            if (selected === correctAnswer) {
+                result.innerText = 'Молодец, ответ верный!';
+            } else {
+                result.innerText = 'Ответ не верный (выучи теорию и попробуй еще раз)';
+            }
+        }
+
+        function getFunctionName(index) {
+            const functions = [
+                "'0'", 'конъюнкция', 'коимпликация', 'функция-переменная x',
+                'обратная коимпликация', 'функция-переменная y', 'сложение',
+                'дизъюнкция', 'стрелка Пирса', 'эквивалентность',
+                'функция отрицания y', 'обратная импликация', 'функция отрицания x',
+                'импликация', 'штрих Шеффера', "'1'"
+            ];
+            return functions[index];
+        }
+
+        function playAgain() {
+            document.getElementById('result').innerText = '';
+            generateQuestion();
+        }
+
+        // Запустим игру при загрузке страницы
+        window.onload = generateQuestion;
+    </script>
+</body>
+</html>

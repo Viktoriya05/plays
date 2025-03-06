@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Случайная булевская функция</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <h1>Случайная булевская функция </h1>
+    <label class="result" for="numberInput">Введите количество аргументов: </label>
+    <input class="result" type="number" id="numberInput" min="1" required>
+    <button class="button1" id="generateButton">Сгенерировать</button>
+    <div class="result"  id="result"></div>
+    <a href="index.html"><button class="button1">Домой</button></a>
+    <script>
+        document.getElementById("generateButton").addEventListener("click", function() {
+            const n = parseInt(document.getElementById("numberInput").value);
+            if (n < 1) {
+                alert("Пожалуйста, введите число больше 0.");
+                return;
+            }
+
+            const m = 1 << n; // 2^n
+            let result = [];
+
+            for (let i = 0; i < m; i++) {
+                // Генерируем случайное булевское значение
+                result[i] = Math.random() < 0.5; // 50% вероятность
+            }
+
+            // Преобразуем булевые значения в строку (0 и 1)
+            const output = result.map(value => value ? '1' : '0').join('');
+            document.getElementById("result").textContent = output;
+        });
+    </script>
+</body>
+</html>
