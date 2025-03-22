@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>КНФ Игра</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        #truthTable {
+            margin-top: 20px;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+        }
+        table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+            padding: 8px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>Введите КНФ</h1>
+     <div class="result" id="truthTable"></div>
+    
+    <div>
+        <button class="button1" onclick="addToInput('x')">x</button>
+        <button class="button1" onclick="addToInput('¬x')">¬x</button>
+        <button class="button1" onclick="addToInput('y')">y</button>
+        <button class="button1" onclick="addToInput('¬y')">¬y</button>
+        <button class="button1" onclick="addToInput('∧')">∧</button>
+        <button class="button1" onclick="addToInput('∨')">∨</button>
+        <button class="button1" onclick="addToInput('(')">(</button>
+        <button class="button1" onclick="addToInput(')')">)</button>
+        
+        
+    </div>
+    <div>
+        <input class="result" type="text" id="knfInput" >
+    </div>
+<button class="button1" onclick="clearInput()">Очистить</button>
+        <button class="button1" onclick="submitKNF()">Проверить</button>
+
+   <div class="result" id="output"></div>
+<button class="button1" onclick="restartGame()">Сыграть заново</button>
+<a href="index.html"><button class="button1">Домой</button></a>
+    <script >
+     let truthTable = [];
+let knfInput = document.getElementById('knfInput');
+let output = document.getElementById('output');
+let truthTableDiv = document.getElementById('truthTable');
+
+function generateTruthTable() {
+    // Генерация случайной таблицы истинности для двух переменных x и y
+    truthTable = [
+        { x: 0, y: 0, result: Math.random() < 0.5 ? 1 : 0 },
+        { x: 0, y: 1, result: Math.random() < 0.5 ? 1 : 0 },
+        { x: 1, y: 0, result: Math.random() < 0.5 ? 1 : 0 },
+        { x: 1, y: 1, result: Math.random() < 0.5 ? 1 : 0 }
+    ];
+
+    // Отображение таблицы истинности
+    let tableHTML = `<table>
+        <tr>
+            <th>x</th>
+            <th>y</th>
+            <th>f</th>
+        </tr>`;
+    truthTable.forEach(row => {
+        tableHTML += `
+        <tr>
+            <td>${row.x}</td>
+            <td>${row.y}</td>
+            <td>${row.result}</td>
+        </tr>`;
+    });
+    tableHTML += `</table>`;
+    truthTableDiv.innerHTML = tableHTML;
+}
+
+function addToInput(value) {
+    knfInput.value += value;
+}
+
+function clearInput() {
+    knfInput.value = '';
+}
+
+function evaluateKNF(knf, x, y) {
+    // Заменяем переменные и отрицания
+    let expr = knf.replace(/x/g, x).replace(/y/g, y)
+                  .replace(/¬0/g, '1').replace(/¬1/g, '0') // Отрицание
+                  .replace(/∧/g, '&&').replace(/∨/g, '||'); // Логические операторы
+
+    // Вычисляем выражение
+    try {
+        return eval(expr) ? 1 : 0; // Возвращаем 1 или 0
+    } catch (e) {
+        return 0; // Если выражение некорректное, возвращаем 0
+    }
+}
+
+function submitKNF() {
+    let knf = knfInput.value;
+    let correct = true;
+
+    // Проверяем КНФ для всех строк таблицы истинности
+    for (let row of truthTable) {
+        if (evaluateKNF(knf, row.x, row.y) !== row.result) {
+            correct = false;
+            break;
+        }
+    }
+
+    if (correct) {
+        output.innerHTML = `<p class="result">Правильно! </p>`;
+    } else {
+        output.innerHTML = `<p class="result">Неправильно! </p>`;
+    }
+
+}
+function restartGame() {
+    generateTruthTable(); // Генерация новой таблицы
+    clearInput(); // Очистка поля ввода
+    output.innerHTML = ''; // Очистка вывода
+}
+// Инициализация игры
+generateTruthTable();
+    </script>
+</body>
+</html>
