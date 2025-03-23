@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Игра: Классы булевых функций</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        
+        label {
+            display: block;
+            margin: 5px 0;
+        }
+       
+        input[type="checkbox"] {
+            accent-color: #007bff; /* Синие галочки */
+        }
+    </style>
+</head>
+<body>
+    <h1> Выберите предполные классы, которым принадлежит эта функция </h1>
+    <div class="result" id="vector"></div>
+    <form class="result" id="classForm">
+        <label><input type="checkbox" name="class" value="T0"> T0 (сохраняет ноль)</label>
+        <label><input type="checkbox" name="class" value="T1"> T1 (сохраняет единицу)</label>
+        <label><input type="checkbox" name="class" value="S"> S (самодвойственная)</label>
+        <label><input type="checkbox" name="class" value="M"> M (монотонная)</label>
+        <label><input type="checkbox" name="class" value="L"> L (линейная)</label>
+        <button class="button1" type="submit">Проверить</button>
+    </form>
+    <div class="result" id="result"></div>
+    <div >
+        <button class="button1" id="playAgain">Играть заново</button>
+        <a href="index.html"><button class="button1">Домой</button></a>
+    </div>
+
+    <script>
+        // Генерация случайного вектора булевой функции
+        function generateRandomVector(n) {
+            let vector = '';
+            for (let i = 0; i < Math.pow(2, n); i++) {
+                vector += Math.round(Math.random());
+            }
+            return vector;
+        }
+
+        // Проверка принадлежности функции к классу T0
+        function isT0(vector) {
+            return vector[0] === '0';
+        }
+
+        // Проверка принадлежности функции к классу T1
+        function isT1(vector) {
+            return vector[vector.length - 1] === '1';
+        }
+
+        // Проверка принадлежности функции к классу S (самодвойственная)
+        function isSelfDual(vector) {
+            for (let i = 0; i < vector.length; i++) {
+                if (vector[i] === vector[vector.length - 1 - i]) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // Проверка принадлежности функции к классу M (монотонная)
+        function isMonotone(vector) {
+            const n = Math.log2(vector.length);
+            for (let i = 0; i < vector.length; i++) {
+                for (let j = 0; j < vector.length; j++) {
+                    if ((i & j) === i && vector[i] > vector[j]) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        // Проверка принадлежности функции к классу L (линейная)
+        function isLinear(vector) {
+            const n = Math.log2(vector.length);
+            // Упрощенная проверка для примера
+            return true; // Заглушка
+        }
+
+        // Инициализация игры
+        function initGame() {
+            const vector = generateRandomVector(2); // Генерация вектора для функции от двух переменных
+            document.getElementById('vector').textContent = `Вектор функции: ${vector}`;
+            document.getElementById('result').textContent = ''; // Очистка результата
+            document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                checkbox.checked = false; // Сброс галочек
+            });
+        }
+
+        // Обработка выбора пользователя
+        document.getElementById('classForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const vector = document.getElementById('vector').textContent.split(': ')[1];
+            const selectedClasses = Array.from(document.querySelectorAll('input[name="class"]:checked')).map(input => input.value);
+            
+            const correctClasses = [];
+            if (isT0(vector)) correctClasses.push('T0');
+            if (isT1(vector)) correctClasses.push('T1');
+            if (isSelfDual(vector)) correctClasses.push('S');
+            if (isMonotone(vector)) correctClasses.push('M');
+            if (isLinear(vector)) correctClasses.push('L');
+            
+            const isCorrect = selectedClasses.every(cls => correctClasses.includes(cls)) && correctClasses.every(cls => selectedClasses.includes(cls));
+            
+            document.getElementById('result').textContent = isCorrect ? 'Правильно!' : 'Неправильно!';
+        });
+
+        // Кнопка "Играть заново"
+        document.getElementById('playAgain').addEventListener('click', function() {
+            initGame();
+        });
+
+        
+
+        // Инициализация игры при загрузке страницы
+        window.onload = initGame;
+    </script>
+</body>
+</html>
