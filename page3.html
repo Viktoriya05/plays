@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вычисление вектора функции</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f3ff; /* Лавандовый фон */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+        h1 {
+            color: #6a52ad; /* Темно-лавандовый */
+            margin-bottom: 20px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        form {
+            background: white; /* Белый фон формы */
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(106, 82, 173, 0.1);
+            width: 320px;
+            border: 2px solid #b8a3ff; /* Лавандовая рамка */
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #6a52ad; /* Темно-лавандовый */
+        }
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 18px;
+            border: 1px solid #d4c7ff;
+            border-radius: 8px;
+            font-size: 15px;
+            background-color: #f9f7ff; /* Светло-лавандовый фон для полей ввода */
+        }
+        button {
+            background-color: #8a6de8; /* Лавандовый */
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            transition: background-color 0.3s ease;
+            font-weight: 600;
+        }
+        button:hover {
+            background-color: #7a5dd8; /* Темнее лавандовый */
+        }
+        #result {
+            margin-top: 25px;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            width: 320px;
+            text-align: center;
+            font-size: 16px;
+            color: #6a52ad;
+            border: 2px solid #b8a3ff;
+            box-shadow: 0 4px 15px rgba(106, 82, 173, 0.1);
+        }
+        .home-button {
+            margin-top: 20px;
+            background-color: #8a6de8;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+            font-weight: 600;
+        }
+        .home-button:hover {
+            background-color: #7a5dd8;
+        }
+        .visualization {
+            margin: 15px 0;
+            padding: 10px;
+            background-color: #f9f7ff;
+            border-radius: 8px;
+        }
+        .visualization img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            display: none; /* Скрыто по умолчанию */
+        }
+        .formula {
+            font-size: 18px;
+            background-color: #f0ebff;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 10px 0;
+            color: #4a3b76;
+        }
+    </style>
+</head>
+<body>
+    <h1>Вычисление вектора функции</h1>
+    <form id="vectorForm">
+        <label for="zeroVector">Нулевая остаточная функция (через запятую):</label>
+        <input type="text" id="zeroVector" required placeholder="Пример: 1, 0, 1">
+        
+        <label for="oneVector">Единичная остаточная функция (через запятую):</label>
+        <input type="text" id="oneVector" required placeholder="Пример: 0, 1, 0">
+        
+        <label for="argNumber">Номер аргумента:</label>
+        <input type="number" id="argNumber" required placeholder="0 или 1">
+        
+        <button type="submit">Вычислить</button>
+    </form>
+
+    <div id="result">
+        <p>Здесь появится результат...</p>
+        <div class="visualization">
+            <img id="resultImage" src="https://i.imgur.com/JQlEfzO.png" alt="Графическое представление">
+        </div>
+    </div>
+
+    <a href="index.html" class="home-button">Домой</a>
+
+    <script>
+        document.getElementById('vectorForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            // Получаем введенные данные
+            const zeroVector = document.getElementById('zeroVector').value.split(',').map(Number);
+            const oneVector = document.getElementById('oneVector').value.split(',').map(Number);
+            const argNumber = parseInt(document.getElementById('argNumber').value);
+            const resultImage = document.getElementById('resultImage');
+
+            // Проверяем, что векторы одинаковой длины
+            if (zeroVector.length !== oneVector.length) {
+                document.getElementById('result').innerHTML = `
+                    <p style="color:#e74c3c; font-weight:500;">Ошибка: Векторы должны быть одинаковой длины!</p>
+                    <div class="visualization">
+                        <img src="https://i.imgur.com/9ZqRzWU.png" alt="Ошибка" style="display:block;">
+                    </div>
+                `;
+                return;
+            }
+
+            // Вычисляем результирующий вектор
+            const resultVector = zeroVector.map((value, index) => {
+                return (argNumber === 0) ? value : oneVector[index];
+            });
+
+            // Показываем соответствующее изображение
+            let imageUrl = "https://sun9-4.userapi.com/impg/Qku0MqCkBTWV6e1eVV6yHAGGX-2xe9mDm1DxAA/a1s8Zl7Tti0.jpg?size=478x471&quality=96&sign=089abe3becf4e902a332eaa56a52ec08&c_uniq_tag=2h0Mq1mh2ZISGNTk1br_VgLTXVF-viHJcnkoHxqEFCQ&type=album";
+            
+
+            // Выводим результат
+            document.getElementById('result').innerHTML = `
+                <p><strong>Результирующий вектор:</strong> [${resultVector.join(', ')}]</p>
+                <div class="visualization">
+                    <img src="${imageUrl}" alt="Графическое представление" style="display:block;">
+                </div>
+                <div class="formula">
+                    <p>Длина вектора: ${resultVector.length}</p>
+                </div>
+            `;
+        });
+    </script>
+</body>
+</html>

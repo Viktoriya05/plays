@@ -1,0 +1,178 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 30px;
+    text-align: center;
+}
+/*изменение цвета body в зависимости от ответа*/
+body#success { /*правильно*/
+    background-color: #d4edda; 
+    transition: background-color 0.5s ease;
+}
+body#error {/*неправильно*/
+    background-color: #f8d7da;
+    transition: background-color 0.5s ease;
+}
+
+.zag{
+    text-align: center;
+    color: palevioletred;
+}
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 10px;
+    background-color: whitesmoke;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+.home {
+    display: inline-block;
+    position: absolute;
+    left: 12px;
+    top: 7px;
+    margin-bottom: 20px;
+    padding: 10px 15px;
+    background-color: lightskyblue;
+    color: black;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+.input-fields {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+.input-fields label {
+    margin-right: 10px;
+}
+.input-fields input {
+    flex: 1;
+    margin-right: 10px;
+}
+.input-fields input:last-child {
+    margin-right: 0;
+}
+.buttonAns {
+    display: block;
+    margin: 0 auto;
+    padding: 10px 20px;
+    background-color: limegreen;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+#result {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    border: 3px solid transparent;
+    background: white;
+    transition: all 0.5s ease;
+    font-weight: bold;
+}
+/* правильно */
+body#success #result {
+    border-color: #d4edda;
+    box-shadow: 0 0 10px rgba(40, 167, 69, 0.3);
+}
+/* неправильно */
+body#error #result {
+    border-color: #f8d7da; /* Красная рамка */
+    box-shadow: 0 0 10px rgba(220, 53, 69, 0.3);
+}
+
+
+.buttonGen{
+    display: block;
+    margin: 0 auto;
+    padding: 10px 20px;
+    background-color: lightseagreen;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.checks{
+    padding: 20px;
+}
+
+
+.custom-checkbox {
+    display: flex;
+    align-items: center;
+    margin: 10px 0;
+    cursor: pointer;
+    justify-content: center;
+}
+.custom-checkbox input {
+    opacity: 0;
+    position: absolute;
+}
+.checkbox-icon {/*граница чекбокса*/
+    width: 20px;
+    height: 20px;
+    border: 2px solid lightsteelblue;
+    border-radius: 4px;
+    margin-right: 10px;
+    position: relative;
+
+}
+.custom-checkbox input:checked ~ .checkbox-icon { /*внутренность чекбокса*/
+    background: lightblue;
+}
+
+
+#varCount, #functionCount {
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    margin-bottom: 15px;
+}
+.level{
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: bolder;
+}
+
+
+table { /*таблица*/
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px auto;
+    border: 2px solid rgb(216, 112, 147);
+    background-color: white;
+}
+th, td {/*ячейки */
+    border: 1px solid rgb(252, 97, 149); 
+    padding: 12px;
+    text-align: center;
+    position: relative;
+}
+td:last-child, th:last-child { /*значение функции*/
+    font-weight: bold;
+    background-color: rgba(248, 215, 218, 0.5);
+}
+tr:hover{
+    background-color: whitesmoke;
+}
+tr:first-child {
+    outline: 3px solid rgb(216, 112, 147);
+    outline-offset: -3px; 
+}
+
+.buttonHelp{
+    display: block;
+    margin: 10px auto;
+    padding: 10px 20px;
+    background-color: rgb(99, 66, 66);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.shpora{
+    margin: 5px auto;
+    text-align: left;
+}

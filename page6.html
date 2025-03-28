@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Игра: Угадай ДНФ</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f3ff; /* Светло-лавандовый фон */
+            color: #4a3b76; /* Тёмно-фиолетовый текст */
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+        h1 {
+            color: #6a52ad; /* Лавандовый акцент */
+            margin-bottom: 20px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .game-container {
+            background: white; /* Белый контейнер */
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(106, 82, 173, 0.1);
+            width: 320px;
+            border: 2px solid #b8a3ff; /* Лавандовая рамка */
+            text-align: center;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #6a52ad; /* Лавандовый акцент */
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #d4c7ff;
+            border-radius: 8px;
+            font-size: 14px;
+            background-color: #f9f7ff; /* Светло-лавандовый фон */
+            color: #4a3b76;
+        }
+        button {
+            background-color: #8a6de8; /* Лавандовый акцент */
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #7a5dd8; /* Темнее лавандовый */
+        }
+        #result {
+            margin-top: 25px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            width: 320px;
+            text-align: center;
+            font-size: 16px;
+            color: #4a3b76;
+            border: 2px solid #b8a3ff;
+            box-shadow: 0 4px 15px rgba(106, 82, 173, 0.1);
+        }
+        .home-button {
+            margin-top: 20px;
+            background-color: #8a6de8;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+            font-weight: 600;
+        }
+        .home-button:hover {
+            background-color: #7a5dd8;
+        }
+        .visualization {
+            margin: 15px 0;
+        }
+        .visualization img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            display: none; /* Скрыто по умолчанию */
+        }
+        .correct {
+            color: #4caf50; /* Зелёный для правильного ответа */
+        }
+        .incorrect {
+            color: #ff6b6b; /* Красный для неправильного */
+        }
+    </style>
+</head>
+<body>
+    <h1>Игра: Угадай ДНФ</h1>
+    <div class="game-container">
+        <p id="vectorDisplay">Вектор функции: </p>
+        <label for="dnfInput">Введите ДНФ:</label>
+        <input type="text" id="dnfInput" placeholder="Пример: (x1 ∧ ¬x2) ∨ (¬x1 ∧ x2)">
+        <button id="checkButton">Проверить</button>
+    </div>
+    
+    <div id="result">
+        <div class="visualization">
+            <img id="resultImage" src="" alt="Результат">
+        </div>
+        <p>Введите ДНФ, соответствующую вектору функции</p>
+    </div>
+
+    <a href="index.html" class="home-button">Домой</a>
+
+    <script>
+        // Генерация случайного вектора длины 4
+        function generateRandomVector() {
+            return Array.from({ length: 4 }, () => Math.floor(Math.random() * 2));
+        }
+
+        // Преобразование вектора в ДНФ
+        function vectorToDNF(vector) {
+            const variables = ['x1', 'x2'];
+            let dnf = [];
+            for (let i = 0; i < vector.length; i++) {
+                if (vector[i] === 1) {
+                    const binary = i.toString(2).padStart(2, '0');
+                    let term = [];
+                    for (let j = 0; j < binary.length; j++) {
+                        term.push(binary[j] === '0' ? `¬${variables[j]}` : variables[j]);
+                    }
+                    dnf.push(`(${term.join(' ∧ ')})`);
+                }
+            }
+            return dnf.join(' ∨ ');
+        }
+
+        // Инициализация игры
+        let currentVector = generateRandomVector();
+        let correctDNF = vectorToDNF(currentVector);
+        const resultImage = document.getElementById('resultImage');
+
+        // Отображение вектора
+        document.getElementById('vectorDisplay').textContent = `Вектор функции: [${currentVector.join(', ')}]`;
+
+        // Проверка введенной ДНФ
+        document.getElementById('checkButton').addEventListener('click', function() {
+            const userDNF = document.getElementById('dnfInput').value.trim();
+            const resultDiv = document.getElementById('result');
+            
+            if (userDNF === correctDNF) {
+                resultImage.src = "https://sun9-9.userapi.com/impg/bp2dGjGJTnIe1riA87WhNTAhOOvIdEXWLY17Bg/tjT4r1A0YjI.jpg?size=512x512&quality=96&sign=369ce60465fa9070dfda3be16e37f971&type=album"; // Изображение для правильного ответа
+                resultImage.style.display = "block";
+                resultDiv.innerHTML = `
+                    <div class="visualization">
+                        <img src="https://sun9-9.userapi.com/impg/bp2dGjGJTnIe1riA87WhNTAhOOvIdEXWLY17Bg/tjT4r1A0YjI.jpg?size=512x512&quality=96&sign=369ce60465fa9070dfda3be16e37f971&type=album" alt="Правильно" style="display:block;">
+                    </div>
+                    <p class="correct">Правильно! 🎉</p>
+                `;
+            } else {
+                resultImage.src = "https://i.pinimg.com/originals/93/32/c7/9332c708b22cdc5f2df7a3f61e9cc206.webp"; // Изображение для неправильного ответа
+                resultImage.style.display = "block";
+                resultDiv.innerHTML = `
+                    <div class="visualization">
+                        <img src="https://i.pinimg.com/originals/93/32/c7/9332c708b22cdc5f2df7a3f61e9cc206.webp" alt="Неверно" style="display:block;">
+                    </div>
+                    <p class="incorrect">Неверно. Правильный ответ:</p>
+                    <p>${correctDNF}</p>
+                `;
+            }
+
+            // Генерация нового вектора для следующего раунда
+            currentVector = generateRandomVector();
+            correctDNF = vectorToDNF(currentVector);
+            document.getElementById('vectorDisplay').textContent = `Вектор функции: [${currentVector.join(', ')}]`;
+            document.getElementById('dnfInput').value = '';
+        });
+    </script>
+</body>
+</html>

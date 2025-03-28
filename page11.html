@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Полнота</title>
+    <link rel="stylesheet" href="css/style2.css">
+</head>
+
+<body>
+    <div class="container">
+        <a href="index.html" class="home"> Домой </a>
+        <h1>Проверка полноты системы</h1>
+
+        <div class="controls">
+            <label>Количество функций:
+                <select id="functionCount">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3" selected>3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                </select>
+            </label>
+            <br>
+            <label>Количество переменных, от которых зависит функция:
+                <select id="varCount">
+                    <option value="2">2</option>
+                    <option value="3" selected>3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                </select>
+            </label>
+            <button class="buttonGen" id="generateBtn">Сгенерировать</button>
+        </div>
+
+        <div id="task" class="task">
+            <p><strong>Система функций:</strong></p>
+            <div id="functions"></div>
+        </div>
+
+        <div id="classCheck" class="level">
+            <p>Выберите правильные ответы:</p>
+            <label class="custom-checkbox">
+                <input type="checkbox" id="isComplete" class="class-checkbox" value="complete">
+                <span class="checkbox-icon"></span>
+                <span class="checkbox-text">Система полная</span>
+            </label>
+            <label class="custom-checkbox">
+                <input type="checkbox" id="T0" class="class-checkbox" value="T0">
+                <span class="checkbox-icon"></span>
+                <span class="checkbox-text">Система принадлежит классу T<sub>0</sub></span>
+            </label>
+            <label class="custom-checkbox">
+                <input type="checkbox" id="T1" class="class-checkbox" value="T1">
+                <span class="checkbox-icon"></span>
+                <span class="checkbox-text">Система принадлежит классу T<sub>1</sub></span>
+            </label>
+            <label class="custom-checkbox">
+                <input type="checkbox" id="L" class="class-checkbox" value="L">
+                <span class="checkbox-icon"></span>
+                <span class="checkbox-text">Система принадлежит классу L</span>
+            </label>
+            <label class="custom-checkbox">
+                <input type="checkbox" id="S" class="class-checkbox" value="S">
+                <span class="checkbox-icon"></span>
+                <span class="checkbox-text">Система принадлежит классу S</span>
+            </label>
+            <label class="custom-checkbox">
+                <input type="checkbox" id="M" class="class-checkbox" value="M">
+                <span class="checkbox-icon"></span>
+                <span class="checkbox-text">Система принадлежит классу M</span>
+            </label>
+            <button class="buttonAns" id="checkBtn">Проверить</button>
+        </div>
+
+        <div id="result" class="result"></div>
+
+        <button class="buttonHelp" id="helpBtn">Шпора</button>
+        <div id="helpInfo" class="help-info" style="display: none;">
+            <ul>
+                <li class="shpora"><strong>T<sub>0</sub></strong> - на нулевом наборе функция возвращает ноль</li>
+                <li class="shpora"><strong>T<sub>1</sub></strong> - на единичном наборе функция возвращает единицу</li>
+                <li class="shpora"><strong>L (линейная)</strong> - в полиноме Жегалкина старшая степень не больше единицы</li>
+                <li class="shpora"><strong>S (самодвойственная)</strong> - на противоположных наборах принимает противоположные значения</li>
+                <li class="shpora"><strong>M (монотонная)</strong> - результат меньшего набора переменных меньше результата большего набора переменных</li>
+            </ul>
+            <p>Система <strong>полна</strong>, если не принадлежит ни одному из этих классов.</p>
+        </div>
+    </div>
+
+    <script>
+        function generateVector(n) {
+            const length = Math.pow(2, n);
+            const vector = new Uint8Array(length);
+            for (let i = 0; i < length; i++) {
+                vector[i] = Math.floor(Math.random() * 2);
+            }
+            return Array.from(vector).join('');
+        }
+
+        function generateSystem(varCount, funcCount) {
+            return Array.from({ length: funcCount }, () => generateVector(varCount));
+        }
+
+        function checkClasses(functions, n) {
+            const classes = { T0: true, T1: true, L: false, S: true, M: true };
+            const lastIndex = Math.pow(2, n) - 1;
+
+            functions.forEach(f => {
+                if (f[0] !== '0') classes.T0 = false; // проверка T0
+                if (f[lastIndex] !== '1') classes.T1 = false; // проверка T1
+                for (let i = 0; i < f.length / 2; i++) { // проверка S
+                    if (f[i] === f[f.length - 1 - i]) {
+                        classes.S = false;
+                        break;
+                    }
+                }
+                outer: for (let i = 0; i < f.length; i++) { // проверка M
+                    for (let j = 0; j < n; j++) {
+                        const neighbor = i | (1 << j);
+                        if (neighbor !== i && neighbor < f.length && f[i] > f[neighbor]) {
+                            classes.M = false;
+                            break outer;
+                        }
+                    }
+                }
+            });
+            classes.L = functions.some(f => { // проверка L
+                const ones = f.split('1').length - 1;
+                return ones === 0 || ones === 1 || ones === f.length || ones === f.length - 1;
+            });
+
+            return classes;
+        }
+
+        const varCountEl = document.getElementById('varCount');
+        const funcCountEl = document.getElementById('functionCount');
+        const generateBtn = document.getElementById('generateBtn');
+        const helpBtn = document.getElementById('helpBtn');
+        const functionsEl = document.getElementById('functions');
+        const checkBtn = document.getElementById('checkBtn');
+        const resultEl = document.getElementById('result');
+        const helpInfoEl = document.getElementById('helpInfo');
+        const isCompleteCheckbox = document.getElementById('isComplete');
+        let currentSystem = [];
+        let correctClasses = {};
+
+        generateBtn.addEventListener('click', () => { // генерация системы функций
+            const n = parseInt(varCountEl.value);
+            const count = parseInt(funcCountEl.value);
+
+            // сброс стилей
+            document.body.removeAttribute('id'); 
+            resultEl.textContent = '';          
+            resultEl.className = 'result';      
+            resultEl.style.border = 'none';     
+
+            //генерация новой системы
+            currentSystem = generateSystem(n, count);
+            correctClasses = checkClasses(currentSystem, n);
+
+            functionsEl.innerHTML = currentSystem.map(f => // отображение функицй
+                `<div class="function">f = ${f} </div>`
+            ).join('');
+
+            //сброс чекбоксов
+            resultEl.textContent = '';
+            isCompleteCheckbox.checked = false;
+            document.querySelectorAll('.class-checkbox').forEach(cb => {
+                cb.checked = false;
+                cb.disabled = false;
+            });
+        });
+
+        helpBtn.addEventListener('click', () => { // справка
+            helpInfoEl.style.display = helpInfoEl.style.display === 'none' ? 'block' : 'none';
+        });
+
+        //проверка ответов
+        checkBtn.addEventListener('click', () => {
+            if (currentSystem.length === 0) {//проверка на дурака
+                resultEl.textContent = "Сначала сгенерируй систему!";
+                return;
+            }
+
+            document.body.removeAttribute('id'); //сброс стилей
+            resultEl.className = 'result';
+
+            const isCompleteChecked = isCompleteCheckbox.checked;// проверка чекбоксов
+            const userAnswers = {
+                T0: document.querySelector('.class-checkbox[value="T0"]').checked,
+                T1: document.querySelector('.class-checkbox[value="T1"]').checked,
+                L: document.querySelector('.class-checkbox[value="L"]').checked,
+                S: document.querySelector('.class-checkbox[value="S"]').checked,
+                M: document.querySelector('.class-checkbox[value="M"]').checked
+            };
+            const isActuallyComplete = Object.values(correctClasses).every(v => !v);
+
+            if (isCompleteChecked && Object.values(userAnswers).some(v => v)) {
+                document.body.id = 'error';
+                resultEl.textContent = "Вот незадача-то... Полная система не может принадлежать ни к одному классу, умник";
+                resultEl.classList.add('error');
+                return;
+            }
+
+            if (isCompleteChecked) { //проверка при неполной системе
+                if (isActuallyComplete) {
+                    document.body.id = 'success';
+                    resultEl.textContent = "Сюда-а-а! Все верно!";
+                    resultEl.classList.add('success');
+                } else {
+                    document.body.id = 'error';
+                    const actualClasses = Object.entries(correctClasses)
+                        .filter(([_, v]) => v)
+                        .map(([k]) => k);
+                    resultEl.textContent = `Вот незадача-то. Так-то система принадлежит классам ${actualClasses.join(', ')}`;
+                    resultEl.classList.add('error');
+                }
+                return;
+            }
+            if (isActuallyComplete) { //проверка при полной и не отмеченной системе 
+                document.body.id = 'error';
+                resultEl.textContent = "Вот незадача-то... ты кое-что забыл!";
+                resultEl.classList.add('error');
+                return;
+            }
+
+            let isCorrect = true;
+            const mistakes = []; //массив ошибок
+
+            for (const cls in correctClasses) { // вывод ошибок
+                if (userAnswers[cls] !== correctClasses[cls]) {
+                    isCorrect = false;
+                    mistakes.push(`${cls}: ты указал ${userAnswers[cls] ? 'принадлежит' : 'не принадлежит'}`);
+                }
+            }
+            if (isCorrect) {
+                document.body.id = 'success';
+                resultEl.textContent = "Сюда-а-а! Все верно!";
+                resultEl.classList.add('success');
+            } else {
+                document.body.id = 'error';
+                resultEl.innerHTML = `Вот незадача-то! Смотри ошибки :<br>${mistakes.join('<br>')}`;
+                resultEl.classList.add('error');
+            }
+        });
+        generateBtn.click(); //первая генерация
+    </script>
+
+</body>
+
+</html>

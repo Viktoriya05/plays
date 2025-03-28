@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Построение ДНФ по вектору</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f3ff;
+            color: #4a3b76;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(106, 82, 173, 0.1);
+            width: 90%;
+            max-width: 600px;
+            margin-bottom: 20px;
+            border: 1px solid #e0d6ff;
+        }
+        h1 {
+            color: #6a52ad;
+            text-align: center;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #6a52ad;
+            font-weight: 500;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            background-color: #f9f7ff;
+            border: 1px solid #d4c7ff;
+            border-radius: 8px;
+            color: #4a3b76;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+        input:focus {
+            border-color: #8a6de8;
+            outline: none;
+        }
+        button {
+            background-color: #8a6de8;
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #7a5dd8;
+        }
+        #result {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f9f7ff;
+            border-radius: 10px;
+            border-left: 5px solid #8a6de8;
+        }
+        .home-button {
+            margin-top: 20px;
+            background-color: #8a6de8;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+            transition: background-color 0.3s;
+            font-weight: 500;
+        }
+        .home-button:hover {
+            background-color: #7a5dd8;
+        }
+        .formula {
+            font-size: 20px;
+            background-color: #f0ebff;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+            color: #4a3b76;
+        }
+        .visualization {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .visualization img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(106, 82, 173, 0.15);
+        }
+        .info-box {
+            background-color: #f0ebff;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .steps {
+            margin-top: 20px;
+            background-color: #f0ebff;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .step {
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #d4c7ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Построение ДНФ по вектору функции</h1>
+        
+        <label for="vectorInput">Введите вектор функции (из 0 и 1):</label>
+        <input type="text" id="vectorInput" placeholder="Пример: 0101 (для функции XOR)">
+        
+        <button id="buildButton">Построить ДНФ</button>
+        
+        <div class="result" id="result">
+            <p>Введите вектор функции и нажмите кнопку "Построить ДНФ"</p>
+        </div>
+    </div>
+
+    <a href="index.html" class="home-button">Домой</a>
+
+    <script>
+        document.getElementById('buildButton').addEventListener('click', function() {
+            const vectorInput = document.getElementById('vectorInput').value.trim();
+            const resultDiv = document.getElementById('result');
+            
+            // Проверка корректности ввода
+            if (!/^[01]+$/.test(vectorInput)) {
+                resultDiv.innerHTML = `
+                    <div class="info-box" style="border-left-color: #ff6b6b;">
+                        <p style="color:#ff6b6b; font-weight:500;">Ошибка: Вектор должен содержать только символы 0 и 1</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const vector = vectorInput.split('').map(Number);
+            const variableCount = Math.log2(vector.length);
+            
+            // Проверка что длина вектора соответствует степени двойки
+            if (!Number.isInteger(variableCount)) {
+                resultDiv.innerHTML = `
+                    <div class="info-box" style="border-left-color: #ff6b6b;">
+                        <p style="color:#ff6b6b; font-weight:500;">Ошибка: Длина вектора должна быть степенью двойки (2, 4, 8, 16 и т.д.)</p>
+                        <p>Вы ввели вектор длиной ${vector.length} символов</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Построение ДНФ с пошаговым объяснением
+            const { dnf, steps } = buildDNF(vector, variableCount);
+            
+            // Выбор соответствующего изображения
+            let imageUrl = "https://i.imgur.com/JQlEfzO.png";
+            if (vector.length === 4) {
+                imageUrl = "https://i.imgur.com/4Q6XZ9J.png";
+            } else if (vector.length === 8) {
+                imageUrl = "https://i.imgur.com/7V2Dk9L.png";
+            }
+            
+            // Вывод результата
+            resultDiv.innerHTML = `
+                <div class="info-box">
+                    <p><strong>Введённый вектор:</strong> [${vector.join(', ')}]</p>
+                    <p><strong>Количество переменных:</strong> ${variableCount}</p>
+                </div>
+                
+                <div class="visualization">
+                    <img src="${imageUrl}" alt="Визуализация ДНФ">
+                </div>
+                
+                <div class="formula">
+                    <p>${formatFormula(dnf)}</p>
+                </div>
+                
+                <div class="steps">
+                    <h3>Шаги построения:</h3>
+                    ${steps.map((step, i) => `
+                        <div class="step">
+                            <p><strong>Шаг ${i+1}:</strong> ${step}</p>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        });
+
+        // Алгоритм построения ДНФ с объяснением шагов
+        function buildDNF(vector, variableCount) {
+            const variables = [];
+            const steps = [];
+            
+            // Генерируем названия переменных (x1, x2, ...)
+            for (let i = 0; i < variableCount; i++) {
+                variables.push(`x${i+1}`);
+            }
+            
+            steps.push(`Определили переменные: ${variables.join(', ')}`);
+            
+            const terms = [];
+            
+            // Проходим по всем наборам значений переменных
+            for (let i = 0; i < vector.length; i++) {
+                if (vector[i] === 1) {
+                    const binary = i.toString(2).padStart(variableCount, '0');
+                    let term = [];
+                    let termDesc = [];
+                    
+                    // Формируем конъюнкцию для текущего набора
+                    for (let j = 0; j < variableCount; j++) {
+                        if (binary[j] === '1') {
+                            term.push(variables[j]);
+                            termDesc.push(variables[j]);
+                        } else {
+                            term.push(`¬${variables[j]}`);
+                            termDesc.push(`не ${variables[j]}`);
+                        }
+                    }
+                    
+                    terms.push(term.join(' ∧ '));
+                    steps.push(`Для набора ${binary} (десятичное ${i}) где функция = 1, строим конъюнкцию: ${termDesc.join(' и ')}`);
+                }
+            }
+            
+            const dnf = terms.join(' ∨ ');
+            
+            if (terms.length > 0) {
+                steps.push(`Объединяем все конъюнкции дизъюнкцией: ${dnf}`);
+            } else {
+                steps.push("Функция тождественно ложна (нет наборов, где функция = 1)");
+            }
+            
+            return {
+                dnf: terms.length > 0 ? dnf : '0',
+                steps
+            };
+        }
+        
+        function formatFormula(formula) {
+            return formula
+                .replace(/\^/g, ' ∧ ')
+                .replace(/v/g, ' ∨ ')
+                .replace(/!/g, '¬')
+                .replace(/x1/g, 'x₁')
+                .replace(/x2/g, 'x₂')
+                .replace(/x3/g, 'x₃')
+                .replace(/x4/g, 'x₄');
+        }
+    </script>
+</body>
+</html>

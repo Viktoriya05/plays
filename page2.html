@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Остаточная</title>
+    <link rel="stylesheet" href="css/style2.css">
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="home"> Домой </a>
+        <h1 class="zag">Остаточная</h1>
+        <div class="input-fields">
+        <label for="vector">Введите вектор функции: </label>
+        <input type="text" id="vector" placeholder="x1,x2,x3,x4,..." required>
+
+        <label for="k">Введите номер аргумента: </label>
+        <input type="number" id="k" min="1" value="1" required>
+
+        <label for="residue">Введите остаточную (0 или 1): </label>
+        <input type="number" id="residue" min="0" max="1" value="0" required>
+        </div>
+        <button class="buttonAns" id="giveButton">Получить ответ</button>
+        
+    <h2>Результат:</h2>
+    <pre id="result"></pre>
+    </div>
+<script>
+    function getResidualFunction(vector, k, residue) {
+            const n = vector.length;
+            const numParts = Math.pow(2, k); // количество частей, на которые делится вектор
+            const partSize = n / numParts; // размер каждой части
+            if (residue === 0) {
+                // нулевая остаточная
+                let result = [];
+                for (let i = 0; i < numParts; i += 2) {
+                    const start = i * partSize;
+                    const end = start + partSize;
+                    result = result.concat(vector.slice(start, end));
+                }
+                return result;
+            } else if (residue === 1) {
+                // единичная остаточная
+                let result = [];
+                for (let i = 1; i < numParts; i += 2) {
+                    const start = i * partSize;
+                    const end = start + partSize;
+                    result = result.concat(vector.slice(start, end));
+                }
+                return result;
+            } 
+        }
+        document.getElementById('giveButton').addEventListener('click', function() {
+            const vectorInput = document.getElementById('vector').value;
+            const k = parseInt(document.getElementById('k').value);
+            const residue = parseInt(document.getElementById('residue').value);
+            const vector = vectorInput.split(',').map(Number);
+            try {
+                const residualFunction = getResidualFunction(vector, k, residue);
+                document.getElementById('result').textContent = "f = (" + residualFunction.join(', ') + ")";
+            } catch (error) {
+                document.getElementById('result').textContent = error.message;
+            }
+        });
+</script>
+</body>
+</html>

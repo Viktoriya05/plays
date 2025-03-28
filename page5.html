@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Существенные переменные</title>
+    <link rel="stylesheet" href="css/style2.css">
+</head>
+
+<body>
+    <div class="container">
+        <a href="index.html" class="home"> Домой </a>
+        <h1 class="zag">Существенные переменные</h1>
+        <label for="varCount" class="level"><h3>Число переменных:</h3></label>
+        <select id="varCount">
+            <option value="2" selected>2 (легко)</option>
+            <option value="3">3 (нормально)</option>
+            <option value="4">4 (сложно)</option>
+            <option value="5">5 (невероятно сложно)</option>
+        </select>
+
+        <button class="buttonGen" id="generateBtn">Сгенерировать</button>
+
+        <h3>Вектор функции:</h3>
+        <pre id="vector"></pre>
+
+        <h3>Отметь существенные переменные <small>(при отсутствии не отмечай ничего)</small>:</h3>
+        <div id="checkboxes"></div>
+
+        <button class="buttonAns" id="checkBtn" disabled>Проверить</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        let currentVector = []; //вектор
+        let varCount = 0; //количество переменных (сложность)
+        const MAX_DISPLAY_VALUES = 50; //сколько будет показано максимум переменных
+
+        const checkboxesDiv = document.getElementById('checkboxes'); //чекбоксы
+        const generateBtn = document.getElementById('generateBtn'); //генерация
+        const checkBtn = document.getElementById('checkBtn'); // проверка
+        const vectorElement = document.getElementById('vector'); //вектор
+        const resultDiv = document.getElementById('result'); //результат
+
+        //генерация случайного вектора
+        function generateVector(n) {
+            const length = Math.pow(2, n);
+            const vector = new Uint8Array(length);
+            for (let i = 0; i < length; i++) {
+                vector[i] = Math.floor(Math.random() * 2);
+            }
+            return vector;
+        }
+        //сравнение подвекторов
+        function areSubvectorsEqual(vec, start1, start2, size) {
+            for (let i = 0; i < size; i++) {
+                if (vec[start1 + i] !== vec[start2 + i]) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        //проверка переменной
+        function isVariableFictitious(vector, varIndex) {
+            const step = Math.pow(2, varIndex + 1);
+            const blockSize = Math.pow(2, varIndex);
+
+            for (let i = 0; i < vector.length; i += step) {
+                if (!areSubvectorsEqual(vector, i, i + blockSize, blockSize)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        //сгенерировать
+        generateBtn.addEventListener('click', function () {
+            //отчистка стилей
+            document.body.removeAttribute('id');
+            resultDiv.textContent = ''; 
+            resultDiv.className = ''; 
+
+            generateBtn.disabled = true;
+            generateBtn.textContent = 'Генерация...';
+            //количество переменных
+            varCount = parseInt(document.getElementById('varCount').value);
+            //генерация и отображение вектора
+            currentVector = generateVector(varCount);
+            vectorElement.textContent = currentVector.slice(0, MAX_DISPLAY_VALUES).join(', ') +
+                (currentVector.length > MAX_DISPLAY_VALUES ? '...' : '');
+
+            //чекбоксы
+            checkboxesDiv.innerHTML = '';
+            for (let i = 1; i <= varCount; i++) {
+                checkboxesDiv.innerHTML += `
+            <label class="custom-checkbox">
+                <input type="checkbox" id="var${i}" value="${i}">
+                <span class="checkbox-icon"></span>
+                <span class="checkbox-text">x${i} — существенная</span>
+            </label>
+        `;
+            }
+            //перезагрузка кнопок
+            generateBtn.disabled = false;
+            generateBtn.textContent = 'Сгенерировать';
+            checkBtn.disabled = false;
+            resultDiv.textContent = '';
+        });
+        //проверка
+        checkBtn.addEventListener('click', function () {
+            const checkboxes = document.querySelectorAll('#checkboxes input[type="checkbox"]');
+            let mistakes = []; //ошибки
+            document.body.removeAttribute('id');//удаление всех id в body
+            //проверка чекбоксов
+            for (let i = 0; i < checkboxes.length; i++) {
+                const varNum = parseInt(checkboxes[i].value);
+                const isFictitious = isVariableFictitious(currentVector, varNum - 1);
+                const userAnswer = checkboxes[i].checked;
+                //сравнение
+                if (isFictitious !== userAnswer) {
+                    mistakes.push(`x${varNum} (ты ответил: ${userAnswer ? 'существенная' : 'фиктивная'})`);
+                }
+            }
+            //результат
+            if (mistakes.length === 0) {
+                document.body.id = 'success'; //изменение id для цвета
+                resultDiv.textContent = 'Сюда-а-а! Все переменные определены правильно.';
+                resultDiv.className = 'success';
+            } else {
+                document.body.id = 'error'; //изменение id для цвета
+                resultDiv.textContent = `Вот незадача-то! Смотри ошибки: ${mistakes.join(', ')}`;
+                resultDiv.className = 'error';
+            }
+        });
+    </script>
+</body>
+
+</html>

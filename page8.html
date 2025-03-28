@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>СДНФ</title>
+    <link rel="stylesheet" href="css/style2.css">
+</head>
+
+<body>
+    <div class="container">
+        <a href="index.html" class="home"> Домой </a>
+        <h1 class="zag">Построение СДНФ с таблицей истинности</h1>
+        <div class="input-fields">
+        <label for="vector">Введите вектор булевой функции:</label>
+        <input type="text" id="vector" placeholder="1010" required>
+        </div>
+        <button class="buttonGen" id="buildBtn">Построить таблицу и СДНФ</button>
+
+        <div id="error" class="error"></div>
+        <div id="truthTable"></div>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        document.getElementById('buildBtn').addEventListener('click', function () {
+            const vectorInput = document.getElementById('vector').value.trim();
+            const errorDiv = document.getElementById('error');
+            const tableDiv = document.getElementById('truthTable');
+            const resultDiv = document.getElementById('result');
+            //отчистка
+            errorDiv.textContent = '';
+            tableDiv.innerHTML = '';
+            resultDiv.innerHTML = '';
+
+            //проверки ввода
+            if (!/^[01]+$/.test(vectorInput)) { 
+                errorDiv.textContent = "Вектор должен содержать только 0 и 1. Это же булева функция!!!";
+                return;
+            }
+            const n = Math.log2(vectorInput.length);
+            if (!Number.isInteger(n) || n < 1) {
+                errorDiv.textContent = `Длина вектора должна быть степенью 2 или ты забыл..? (сейчас длина ${vectorInput.length})`;
+                return;
+            }
+
+            generateTruthTable(vectorInput, n, tableDiv); //таблица
+
+            const sdnf = buildSDNF(vectorInput, n); //сднф
+            resultDiv.innerHTML = `
+            <div class="formula">
+                <strong>СДНФ:</strong><br>
+                    ${sdnf.terms.length > 0 ? sdnf.terms.join(' ∨ ') : "1 (Константа 1)"}
+            </div>
+            `;
+        });
+
+        function generateTruthTable(vector, varCount, container) {
+            let tableHTML = `
+            <table>
+                <tr>
+                    ${Array.from({ length: varCount }, (_, i) => `<th>x${i + 1}</th>`).join('')}
+                    <th>f</th>
+                </tr>
+                `;
+            for (let i = 0; i < vector.length; i++) {
+                const binary = i.toString(2).padStart(varCount, '0');
+                const value = vector[i];
+                tableHTML += `
+                <tr>
+                    ${binary.split('').map(bit => `<td>${bit}</td>`).join('')}
+                    <td class="${value === '1' ? 'true-cell' : 'false-cell'}">${value}</td>
+                </tr>
+                `;
+            }
+            tableHTML += `</table>`;
+            container.innerHTML = `<h3>Таблица истинности (${varCount} переменных):</h3>` + tableHTML;
+        }
+
+        function buildSDNF(vector, varCount) {
+            let terms = [];
+            let shortFormTerms = [];
+            for (let i = 0; i < vector.length; i++) {
+                if (vector[i] === '1') {
+                    const binary = i.toString(2).padStart(varCount, '0');
+                    let term = [];
+                    let shortTerm = [];
+                    for (let j = 0; j < binary.length; j++) {
+                        term.push(binary[j] === '0' ? `¬x${j + 1}` : `x${j + 1}`);
+                        shortTerm.push(binary[j] === '0' ? `x̄${j + 1}` : `x${j + 1}`);
+                    }
+                    terms.push(`(${term.join(' ∧ ')})`);
+                    shortFormTerms.push(shortTerm.join(''));
+                }
+            }
+            return {
+                terms: terms,
+                shortForm: shortFormTerms.join(' + ')
+            };
+        }
+    </script>
+</body>
+
+</html>
