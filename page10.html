@@ -25,8 +25,8 @@
     <h1> Выберите предполные классы, которым принадлежит эта функция </h1>
     <div class="result" id="vector"></div>
     <form class="result" id="classForm">
-        <label><input type="checkbox" name="class" value="T0"> T0 (сохраняет ноль)</label>
-        <label><input type="checkbox" name="class" value="T1"> T1 (сохраняет единицу)</label>
+        <label><input type="checkbox" name="class" value="T0"> T0 (возвращает ноль)</label>
+        <label><input type="checkbox" name="class" value="T1"> T1 (возвращает единицу)</label>
         <label><input type="checkbox" name="class" value="S"> S (самодвойственная)</label>
         <label><input type="checkbox" name="class" value="M"> M (монотонная)</label>
         <label><input type="checkbox" name="class" value="L"> L (линейная)</label>
@@ -81,12 +81,35 @@
             return true;
         }
 
-        // Проверка принадлежности функции к классу L (линейная)
-        function isLinear(vector) {
-            const n = Math.log2(vector.length);
-            // Упрощенная проверка для примера
-            return true; // Заглушка
+        // Правильная проверка принадлежности функции к классу L (линейная)
+    function isLinear(vector) {
+        // Для функции от 2 переменных (4 значения)
+        if (vector.length !== 4) return false;
+        
+        // Пробуем все возможные линейные комбинации
+        // f(x1,x2) = a0 ⊕ a1·x1 ⊕ a2·x2
+        for (let a0 = 0; a0 <= 1; a0++) {
+            for (let a1 = 0; a1 <= 1; a1++) {
+                for (let a2 = 0; a2 <= 1; a2++) {
+                    let isMatch = true;
+                    // Проверяем все 4 возможных набора переменных
+                    for (let x1 = 0; x1 <= 1; x1++) {
+                        for (let x2 = 0; x2 <= 1; x2++) {
+                            const index = x1 * 2 + x2; // 00, 01, 10, 11 → 0,1,2,3
+                            const expected = a0 ^ (a1 & x1) ^ (a2 & x2);
+                            if (parseInt(vector[index]) !== expected) {
+                                isMatch = false;
+                                break;
+                            }
+                        }
+                        if (!isMatch) break;
+                    }
+                    if (isMatch) return true;
+                }
+            }
         }
+        return false;
+    }
 
         // Инициализация игры
         function initGame() {

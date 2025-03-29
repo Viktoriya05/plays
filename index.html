@@ -3,72 +3,226 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Булевы функции</title>
-    <link rel="stylesheet" href="css/style.css">
+    <title>Игры по булевым функциям</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
     <style>
-        table {
-    width: 100%;
-    border-collapse: collapse;
-}
-td {
-    width: 25%;
-    height: 150px;
-    border: 1px solid #ccc;
-    text-align: center;
-    vertical-align: middle;
-    background-color: #fff;
-}
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color:#007bff;
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-top: 10px;
+        }
+        
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .game-card {
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .game-content {
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .game-title {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: #007bff;
+            font-weight: 500;
+        }
+        
+        .game-description {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 20px;
+            min-height: 60px;
+        }
+        
+        .game-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color:#007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+        
+        .game-button:hover {
+            background-color:#007bff;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .games-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
     </style>
 </head>
-<body >
-    
-<h1>Булевы функции</h1>
-
-
-<table >
-    <tr>
-        <td class="cell">
-            <a href="page1.html"><button class="button">Запустить игру</button></a>
-        </td>
-        <td class="cell">
-            <a href="page2.html"><button class="button">Запустить игру</button></a>
-        </td>
-        <td class="cell">
-            <a href="page3.html"><button class="button">Запустить игру</button></a>
-        </td>
-        <td class="cell" >
-            <a href="page4.html"><button class="button">Запустить игру</button></a>
-        </td>
-    </tr>
-    <tr>
-        <td class="cell">
-            <a href="page5.html"><button class="button">Запустить игру</button></a>
-        </td>
-        <td class="cell">
-            <a href="page6.html"><button class="button">Запустить игру</button></a>
-        </td>
-        <td class="cell">
-            <a href="page7.html"><button class="button">Запустить игру</button></a>
-        </td>
-        <td class="cell">
-            <a href="page8.html"><button class="button">Запустить игру</button></a>
-        </td>
-    </tr>
-    <tr>
-        <td class="cell">
-            <a href="page9.html"><button class="button">Запустить игру</button></a>
-        </td>
-        <td class="cell">
-            <a href="page10.html"><button class="button">Запустить игру</button></a>
-        </td>
-        <td class="cell">
-            <a href="page11.html"><button class="button">Запустить игру</button></a>
-        </td>
-        <td class="cell">
-            <a href="page12.html"><button class="button">Запустить игру</button></a>
-        </td>
-    </tr>
-</table>
-
+<body>
+    <div class="container">
+        <header>
+            <h1>Игры по булевым функциям</h1>
+            <p class="subtitle">Изучайте булеву алгебру через увлекательные игры и задания</p>
+        </header>
+        
+        <div class="games-grid">
+            <div class="game-card">
+                <div class="game-content">
+                    <h3 class="game-title">Булевая функция</h3>
+                    <p class="game-description">Вводите число и узнавайте булеву функцию от этого числа переменных</p>
+                    <a href="page1.html" class="game-button">Играть</a>
+                </div>
+            </div>
+            
+            <div class="game-card">
+                <div class="game-content">
+                    <h3 class="game-title">Остаточная функция</h3>
+                    <p class="game-description">Вводите вектор функции, 0 или 1, номер аргумента и узнавайте остаточную</p>
+                    <a href="page2.html" class="game-button">Играть</a>
+                </div>
+            </div>
+            
+            <div class="game-card">
+                <div class="game-content">
+                    <h3 class="game-title">Вектор функции</h3>
+                    <p class="game-description">Вводите нулевую и единичную остаточные, номер аргумента и получаете вектор функции</p>
+                    <a href="page3.html" class="game-button">Играть</a>
+                </div>
+            </div>
+            
+            <div class="game-card">
+                <div class="game-content">
+                    <h3 class="game-title">Имя функции</h3>
+                    <p class="game-description">Вам предлагается вектор функции, вы должны выбрать как она называется</p>
+                    <a href="page4.html" class="game-button">Играть</a>
+                </div>
+            </div>
+            
+            <div class="game-card">
+                <div class="game-content">
+                    <h3 class="game-title">Существенные и фиктивные переменные</h3>
+                    <p class="game-description">Система предлагает вектор функции, вы выбираете существенные и фиктивные переменные</p>
+                    <a href="page5.html" class="game-button">Играть</a>
+                </div>
+            </div>
+            
+            <div class="game-card">
+                <div class="game-content">
+                    <h3 class="game-title">ДНФ</h3>
+                    <p class="game-description">Вам нужно написать ДНФ для предложенного вектора функции</p>
+                    <a href="page6.html" class="game-button">Играть</a>
+                </div>
+            </div>
+            
+            <div class="game-card">
+                <div class="game-content">
+                    <h3 class="game-title">КНФ</h3>
+                    <p class="game-description">Вам нужно написать КНФ для предложенного вектора функции</p>
+                    <a href="page7.html" class="game-button">Играть</a>
+                </div>
+            </div>
+            
+            <div class="game-card">
+                <div class="game-content">
+                    <h3 class="game-title">СДНФ</h3>
+                    <p class="game-description">Научитесь строить СДНФ</p>
+                    <a href="page8.html" class="game-button">Играть</a>
+                </div>
+            </div>
+            
+            <div class="game-card">
+                <div class="game-content">
+                    <h3 class="game-title">СКНФ</h3>
+                    <p class="game-description">Освойте СКНФ</p>
+                    <a href="page9.html" class="game-button">Играть</a>
+                </div>
+            </div>
+            
+            <div class="game-card">
+                <div class="game-content">
+                    <h3 class="game-title">Предполные классы</h3>
+                    <p class="game-description">Вы должны выбрать предполные классы которым пренадлежит данная функция</p>
+                    <a href="page10.html" class="game-button">Играть</a>
+                </div>
+            </div>
+            
+            <div class="game-card">
+                <div class="game-content">
+                    <h3 class="game-title">Полные классы</h3>
+                    <p class="game-description">Определите является ли полным набор функций</p>
+                    <a href="page11.html" class="game-button">Играть</a>
+                </div>
+            </div>
+            
+            <div class="game-card">
+                <div class="game-content">
+                    <h3 class="game-title">Построение ДНФ</h3>
+                    <p class="game-description">В этой игре воспользуемся минимизацией</p>
+                    <a href="page12.html" class="game-button">Играть</a>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>мяу</p>
+        </footer>
+    </div>
 </body>
 </html>
