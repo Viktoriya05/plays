@@ -82,9 +82,12 @@
             <ul>
                 <li class="shpora"><strong>T<sub>0</sub></strong> - на нулевом наборе функция возвращает ноль</li>
                 <li class="shpora"><strong>T<sub>1</sub></strong> - на единичном наборе функция возвращает единицу</li>
-                <li class="shpora"><strong>L (линейная)</strong> - в полиноме Жегалкина старшая степень не больше единицы</li>
-                <li class="shpora"><strong>S (самодвойственная)</strong> - на противоположных наборах принимает противоположные значения</li>
-                <li class="shpora"><strong>M (монотонная)</strong> - результат меньшего набора переменных меньше результата большего набора переменных</li>
+                <li class="shpora"><strong>L (линейная)</strong> - в полиноме Жегалкина старшая степень не больше
+                    единицы</li>
+                <li class="shpora"><strong>S (самодвойственная)</strong> - на противоположных наборах принимает
+                    противоположные значения</li>
+                <li class="shpora"><strong>M (монотонная)</strong> - результат меньшего набора переменных меньше
+                    результата большего набора переменных</li>
             </ul>
             <p>Система <strong>полна</strong>, если не принадлежит ни одному из этих классов.</p>
         </div>
@@ -104,20 +107,60 @@
             return Array.from({ length: funcCount }, () => generateVector(varCount));
         }
 
+        // Новая улучшенная функция проверки линейности
+        function isLinear(vector) {
+            const n = Math.log2(vector.length);
+            // Проверяем что количество переменных целое и в диапазоне 2-5
+            if (!Number.isInteger(n) || n < 2 || n > 5) return false;
+
+            // Создаем маску для всех возможных комбинаций коэффициентов
+            const totalCoefficients = n + 1; // a0 + a1x1 + ... + anxn
+            const totalCombinations = 1 << totalCoefficients; // 2^(n+1) вариантов
+
+            // Проверяем все возможные линейные комбинации
+            for (let mask = 0; mask < totalCombinations; mask++) {
+                let isMatch = true;
+
+                // Проверяем для всех возможных входных наборов
+                for (let input = 0; input < vector.length; input++) {
+                    let expected = (mask & 1); // a0
+
+                    // Вычисляем линейную комбинацию a1x1 ⊕ a2x2 ⊕ ... ⊕ anxn
+                    for (let i = 0; i < n; i++) {
+                        const xi = (input >> i) & 1; // Значение i-й переменной (0 или 1)
+                        const ai = (mask >> (i + 1)) & 1; // Коэффициент при xi
+                        expected ^= (ai & xi); // Добавляем aixi к ожидаемому значению
+                    }
+
+                    // Сравниваем с реальным значением функции
+                    if (parseInt(vector[input]) !== expected) {
+                        isMatch = false;
+                        break;
+                    }
+                }
+
+                if (isMatch) return true;
+            }
+
+            return false;
+        }
+
         function checkClasses(functions, n) {
             const classes = { T0: true, T1: true, L: false, S: true, M: true };
             const lastIndex = Math.pow(2, n) - 1;
 
             functions.forEach(f => {
-                if (f[0] !== '0') classes.T0 = false; // проверка T0
-                if (f[lastIndex] !== '1') classes.T1 = false; // проверка T1
-                for (let i = 0; i < f.length / 2; i++) { // проверка S
+                if (f[0] !== '0') classes.T0 = false;
+                if (f[lastIndex] !== '1') classes.T1 = false;
+
+                for (let i = 0; i < f.length / 2; i++) {
                     if (f[i] === f[f.length - 1 - i]) {
                         classes.S = false;
                         break;
                     }
                 }
-                outer: for (let i = 0; i < f.length; i++) { // проверка M
+
+                outer: for (let i = 0; i < f.length; i++) {
                     for (let j = 0; j < n; j++) {
                         const neighbor = i | (1 << j);
                         if (neighbor !== i && neighbor < f.length && f[i] > f[neighbor]) {
@@ -126,10 +169,10 @@
                         }
                     }
                 }
-            });
-            classes.L = functions.some(f => { // проверка L
-                const ones = f.split('1').length - 1;
-                return ones === 0 || ones === 1 || ones === f.length || ones === f.length - 1;
+
+                if (isLinear(f)) {
+                    classes.L = true;
+                }
             });
 
             return classes;
@@ -147,25 +190,22 @@
         let currentSystem = [];
         let correctClasses = {};
 
-        generateBtn.addEventListener('click', () => { // генерация системы функций
+        generateBtn.addEventListener('click', () => {
             const n = parseInt(varCountEl.value);
             const count = parseInt(funcCountEl.value);
 
-            // сброс стилей
-            document.body.removeAttribute('id'); 
-            resultEl.textContent = '';          
-            resultEl.className = 'result';      
-            resultEl.style.border = 'none';     
+            document.body.removeAttribute('id');
+            resultEl.textContent = '';
+            resultEl.className = 'result';
+            resultEl.style.border = 'none';
 
-            //генерация новой системы
             currentSystem = generateSystem(n, count);
             correctClasses = checkClasses(currentSystem, n);
 
-            functionsEl.innerHTML = currentSystem.map(f => // отображение функицй
+            functionsEl.innerHTML = currentSystem.map(f =>
                 `<div class="function">f = ${f} </div>`
             ).join('');
 
-            //сброс чекбоксов
             resultEl.textContent = '';
             isCompleteCheckbox.checked = false;
             document.querySelectorAll('.class-checkbox').forEach(cb => {
@@ -174,21 +214,20 @@
             });
         });
 
-        helpBtn.addEventListener('click', () => { // справка
+        helpBtn.addEventListener('click', () => {
             helpInfoEl.style.display = helpInfoEl.style.display === 'none' ? 'block' : 'none';
         });
 
-        //проверка ответов
         checkBtn.addEventListener('click', () => {
-            if (currentSystem.length === 0) {//проверка на дурака
+            if (currentSystem.length === 0) {
                 resultEl.textContent = "Сначала сгенерируй систему!";
                 return;
             }
 
-            document.body.removeAttribute('id'); //сброс стилей
+            document.body.removeAttribute('id');
             resultEl.className = 'result';
 
-            const isCompleteChecked = isCompleteCheckbox.checked;// проверка чекбоксов
+            const isCompleteChecked = isCompleteCheckbox.checked;
             const userAnswers = {
                 T0: document.querySelector('.class-checkbox[value="T0"]').checked,
                 T1: document.querySelector('.class-checkbox[value="T1"]').checked,
@@ -205,7 +244,7 @@
                 return;
             }
 
-            if (isCompleteChecked) { //проверка при неполной системе
+            if (isCompleteChecked) {
                 if (isActuallyComplete) {
                     document.body.id = 'success';
                     resultEl.textContent = "Сюда-а-а! Все верно!";
@@ -220,7 +259,7 @@
                 }
                 return;
             }
-            if (isActuallyComplete) { //проверка при полной и не отмеченной системе 
+            if (isActuallyComplete) {
                 document.body.id = 'error';
                 resultEl.textContent = "Вот незадача-то... ты кое-что забыл!";
                 resultEl.classList.add('error');
@@ -228,9 +267,9 @@
             }
 
             let isCorrect = true;
-            const mistakes = []; //массив ошибок
+            const mistakes = [];
 
-            for (const cls in correctClasses) { // вывод ошибок
+            for (const cls in correctClasses) {
                 if (userAnswers[cls] !== correctClasses[cls]) {
                     isCorrect = false;
                     mistakes.push(`${cls}: ты указал ${userAnswers[cls] ? 'принадлежит' : 'не принадлежит'}`);
@@ -246,7 +285,7 @@
                 resultEl.classList.add('error');
             }
         });
-        generateBtn.click(); //первая генерация
+        generateBtn.click();
     </script>
 
 </body>
