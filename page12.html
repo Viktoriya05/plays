@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Построение ДНФ по вектору</title>
+    <title>Минимизация ДНФ</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -22,7 +22,7 @@
             padding: 30px;
             box-shadow: 0 4px 15px rgba(106, 82, 173, 0.1);
             width: 90%;
-            max-width: 600px;
+            max-width: 700px;
             margin-bottom: 20px;
             border: 1px solid #e0d6ff;
         }
@@ -70,10 +70,6 @@
         }
         #result {
             margin-top: 30px;
-            padding: 20px;
-            background-color: #f9f7ff;
-            border-radius: 10px;
-            border-left: 5px solid #8a6de8;
         }
         .home-button {
             margin-top: 20px;
@@ -98,18 +94,6 @@
             text-align: center;
             color: #4a3b76;
         }
-        .visualization {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 20px 0;
-        }
-        .visualization img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(106, 82, 173, 0.15);
-        }
         .info-box {
             background-color: #f0ebff;
             padding: 15px;
@@ -123,23 +107,66 @@
             border-radius: 8px;
         }
         .step {
-            margin-bottom: 10px;
-            padding-bottom: 10px;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
             border-bottom: 1px solid #d4c7ff;
+        }
+        .step-title {
+            font-weight: 600;
+            color: #6a52ad;
+            margin-bottom: 10px;
+        }
+        .implicant {
+            font-family: monospace;
+            background-color: #e0d6ff;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        .minterm {
+            font-family: monospace;
+            background-color: #d6ffe0;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        th, td {
+            border: 1px solid #d4c7ff;
+            padding: 6px;
+            text-align: center;
+        }
+        th {
+            background-color: #e0d6ff;
+        }
+        .covered {
+            background-color: #e8f5e9;
+        }
+        .essential {
+            background-color: #fff9c4;
+        }
+        .compact-table {
+            font-size: 13px;
+        }
+        .compact-table th, .compact-table td {
+            padding: 4px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Построение ДНФ по вектору функции</h1>
+        <h1>Минимизация ДНФ</h1>
         
         <label for="vectorInput">Введите вектор функции (из 0 и 1):</label>
-        <input type="text" id="vectorInput" placeholder="Пример: 0101 (для функции XOR)">
+        <input type="text" id="vectorInput" placeholder="Пример: 11010011">
         
-        <button id="buildButton">Построить ДНФ</button>
+        <button id="buildButton">Минимизировать ДНФ</button>
         
         <div class="result" id="result">
-            <p>Введите вектор функции и нажмите кнопку "Построить ДНФ"</p>
+            <p>Введите вектор функции и нажмите кнопку</p>
         </div>
     </div>
 
@@ -174,16 +201,8 @@
                 return;
             }
             
-            // Построение ДНФ с пошаговым объяснением
-            const { dnf, steps } = buildDNF(vector, variableCount);
-            
-            // Выбор соответствующего изображения
-            let imageUrl = "https://i.imgur.com/JQlEfzO.png";
-            if (vector.length === 4) {
-                imageUrl = "https://i.imgur.com/4Q6XZ9J.png";
-            } else if (vector.length === 8) {
-                imageUrl = "https://i.imgur.com/7V2Dk9L.png";
-            }
+            // Минимизация ДНФ с шагами и таблицами
+            const { minimizedDnf, steps } = minimizeDNFWithSteps(vector);
             
             // Вывод результата
             resultDiv.innerHTML = `
@@ -192,85 +211,305 @@
                     <p><strong>Количество переменных:</strong> ${variableCount}</p>
                 </div>
                 
-                <div class="visualization">
-                    <img src="${imageUrl}" alt="Визуализация ДНФ">
-                </div>
-                
                 <div class="formula">
-                    <p>${formatFormula(dnf)}</p>
+                    <p><strong>Минимизированная ДНФ:</strong> ${formatFormula(minimizedDnf)}</p>
                 </div>
                 
                 <div class="steps">
-                    <h3>Шаги построения:</h3>
-                    ${steps.map((step, i) => `
+                    <h3>Процесс минимизации:</h3>
+                    ${steps.map((step, index) => `
                         <div class="step">
-                            <p><strong>Шаг ${i+1}:</strong> ${step}</p>
+                            <div class="step-title">${index+1}. ${step.title}</div>
+                            <div>${step.content}</div>
+                            ${step.table ? step.table : ''}
                         </div>
                     `).join('')}
                 </div>
             `;
         });
 
-        // Алгоритм построения ДНФ с объяснением шагов
-        function buildDNF(vector, variableCount) {
-            const variables = [];
+        function minimizeDNFWithSteps(vector) {
             const steps = [];
-            
-            // Генерируем названия переменных (x1, x2, ...)
+            const variableCount = Math.log2(vector.length);
+            const variables = [];
             for (let i = 0; i < variableCount; i++) {
                 variables.push(`x${i+1}`);
             }
             
-            steps.push(`Определили переменные: ${variables.join(', ')}`);
-            
-            const terms = [];
-            
-            // Проходим по всем наборам значений переменных
+            // Шаг 1: Нахождение минтермов
+            const minterms = [];
             for (let i = 0; i < vector.length; i++) {
                 if (vector[i] === 1) {
-                    const binary = i.toString(2).padStart(variableCount, '0');
-                    let term = [];
-                    let termDesc = [];
-                    
-                    // Формируем конъюнкцию для текущего набора
-                    for (let j = 0; j < variableCount; j++) {
-                        if (binary[j] === '1') {
-                            term.push(variables[j]);
-                            termDesc.push(variables[j]);
-                        } else {
-                            term.push(`¬${variables[j]}`);
-                            termDesc.push(`не ${variables[j]}`);
-                        }
-                    }
-                    
-                    terms.push(term.join(' ∧ '));
-                    steps.push(`Для набора ${binary} (десятичное ${i}) где функция = 1, строим конъюнкцию: ${termDesc.join(' и ')}`);
+                    minterms.push(i.toString(2).padStart(variableCount, '0'));
                 }
             }
             
-            const dnf = terms.join(' ∨ ');
+            // Компактная таблица минтермов
+            let mintermsTable = `<table class="compact-table">
+                <tr><th>№</th><th>Двоичный</th><th>Формула</th></tr>
+                ${minterms.map((m, i) => {
+                    const vars = m.split('').map((bit, i) => bit === '1' ? variables[i] : `¬${variables[i]}`).join('∧');
+                    return `<tr>
+                        <td>${i+1}</td>
+                        <td><span class="minterm">${m}</span></td>
+                        <td>${vars}</td>
+                    </tr>`;
+                }).join('')}
+            </table>`;
             
-            if (terms.length > 0) {
-                steps.push(`Объединяем все конъюнкции дизъюнкцией: ${dnf}`);
-            } else {
-                steps.push("Функция тождественно ложна (нет наборов, где функция = 1)");
+            steps.push({
+                title: "Найденные минтермы",
+                content: `Функция равна 1 на ${minterms.length} наборах:`,
+                table: mintermsTable
+            });
+            
+            if (minterms.length === 0) return { minimizedDnf: '0', steps };
+            if (minterms.length === vector.length) return { minimizedDnf: '1', steps };
+            
+            // Шаг 2: Нахождение простых импликантов
+            const { primeImplicants, mergingSteps } = findPrimeImplicantsWithSteps(minterms);
+            
+            steps.push({
+                title: "Склеивание минтермов",
+                content: "Объединение соседних минтермов:",
+                table: mergingSteps
+            });
+            
+            // Компактная таблица простых импликантов
+            let primeTable = `<table class="compact-table">
+                <tr><th>Импликант</th><th>Формула</th></tr>
+                ${primeImplicants.map(imp => {
+                    const rep = imp.split('').map((bit, i) => {
+                        if (bit === '-') return null;
+                        return bit === '1' ? variables[i] : `¬${variables[i]}`;
+                    }).filter(x => x).join('∧') || '1';
+                    return `<tr>
+                        <td><span class="implicant">${imp}</span></td>
+                        <td>${rep}</td>
+                    </tr>`;
+                }).join('')}
+            </table>`;
+            
+            steps.push({
+                title: "Простые импликанты",
+                content: `Получено ${primeImplicants.length} импликантов:`,
+                table: primeTable
+            });
+            
+            // Шаг 3: Таблица покрытий
+            const { essentialImplicants, coverageTable } = buildCoverageTable(primeImplicants, minterms);
+            
+            steps.push({
+                title: "Таблица покрытий",
+                content: "✓ - импликант покрывает минтерм",
+                table: coverageTable
+            });
+            
+            // Шаг 4: Существенные импликанты
+            steps.push({
+                title: "Существенные импликанты",
+                content: `Выбрано ${essentialImplicants.length} существенных импликантов:`,
+                table: `<table class="compact-table">
+                    <tr><th>Импликант</th><th>Формула</th></tr>
+                    ${essentialImplicants.map(imp => {
+                        const rep = imp.split('').map((bit, i) => {
+                            if (bit === '-') return null;
+                            return bit === '1' ? variables[i] : `¬${variables[i]}`;
+                        }).filter(x => x).join('∧') || '1';
+                        return `<tr>
+                            <td><span class="implicant">${imp}</span></td>
+                            <td>${rep}</td>
+                        </tr>`;
+                    }).join('')}
+                </table>`
+            });
+            
+            // Шаг 5: Результат минимизации
+            const minimizedDnf = essentialImplicants.map(imp => {
+                const parts = [];
+                for (let i = 0; i < imp.length; i++) {
+                    if (imp[i] === '-') continue;
+                    if (imp[i] === '1') parts.push(variables[i]);
+                    else parts.push(`¬${variables[i]}`);
+                }
+                return parts.join('∧');
+            }).join(' ∨ ') || '0';
+            
+            steps.push({
+                title: "Результат минимизации",
+                content: "Минимальная ДНФ:",
+                table: `<div class="formula">${formatFormula(minimizedDnf)}</div>`
+            });
+            
+            return { minimizedDnf, steps };
+        }
+        
+        function findPrimeImplicantsWithSteps(minterms) {
+            let groups = {};
+            let mergingSteps = '<table class="compact-table"><tr><th>Этап</th><th>Склеивание</th><th>Результат</th></tr>';
+            let stepNum = 1;
+            
+            // Группировка минтермов
+            minterms.forEach(m => {
+                const ones = m.split('1').length - 1;
+                if (!groups[ones]) groups[ones] = [];
+                groups[ones].push({ term: m, used: false });
+            });
+            
+            let primeImplicants = [];
+            let changed = true;
+            
+            while (changed) {
+                changed = false;
+                let newGroups = {};
+                let checked = {};
+                
+                const groupKeys = Object.keys(groups).sort((a, b) => a - b);
+                
+                for (let i = 0; i < groupKeys.length - 1; i++) {
+                    const currentGroup = groups[groupKeys[i]];
+                    const nextGroup = groups[groupKeys[i+1]];
+                    
+                    for (const a of currentGroup) {
+                        for (const b of nextGroup) {
+                            const diffPos = findDifferencePosition(a.term, b.term);
+                            if (diffPos !== -1) {
+                                const newTerm = a.term.substring(0, diffPos) + '-' + a.term.substring(diffPos + 1);
+                                
+                                if (!checked[newTerm]) {
+                                    checked[newTerm] = true;
+                                    const ones = newTerm.split('1').length - 1;
+                                    if (!newGroups[ones]) newGroups[ones] = [];
+                                    newGroups[ones].push({ term: newTerm, used: false });
+                                    changed = true;
+                                    
+                                    mergingSteps += `<tr>
+                                        <td>${stepNum++}</td>
+                                        <td>${a.term} + ${b.term}</td>
+                                        <td><span class="implicant">${newTerm}</span></td>
+                                    </tr>`;
+                                }
+                                
+                                a.used = true;
+                                b.used = true;
+                            }
+                        }
+                    }
+                }
+                
+                // Неиспользованные минтермы -> простые импликанты
+                for (const group of Object.values(groups)) {
+                    for (const item of group) {
+                        if (!item.used && !primeImplicants.includes(item.term)) {
+                            primeImplicants.push(item.term);
+                        }
+                    }
+                }
+                
+                groups = newGroups;
             }
             
-            return {
-                dnf: terms.length > 0 ? dnf : '0',
-                steps
-            };
+            mergingSteps += '</table>';
+            return { primeImplicants, mergingSteps };
+        }
+        
+        function buildCoverageTable(primeImplicants, minterms) {
+            let coverageTable = `<table class="compact-table"><tr><th>Импликант \\ Минтерм</th>`;
+            minterms.forEach(m => coverageTable += `<th>${m}</th>`);
+            coverageTable += '</tr>';
+            
+            const coverage = {};
+            minterms.forEach(m => coverage[m] = []);
+            
+            const essentialImplicants = [];
+            const covered = new Set();
+            
+            // Строим таблицу и находим покрытия
+            primeImplicants.forEach(imp => {
+                coverageTable += `<tr><td><span class="implicant">${imp}</span></td>`;
+                minterms.forEach(m => {
+                    const covers = isCovered(m, imp);
+                    if (covers) coverage[m].push(imp);
+                    coverageTable += `<td class="${covers ? 'covered' : ''}">${covers ? '✓' : ''}</td>`;
+                });
+                coverageTable += '</tr>';
+            });
+            coverageTable += '</table>';
+            
+            // Находим существенные импликанты
+            for (const [m, implicants] of Object.entries(coverage)) {
+                if (implicants.length === 1 && !essentialImplicants.includes(implicants[0])) {
+                    essentialImplicants.push(implicants[0]);
+                    minterms.forEach(m2 => {
+                        if (isCovered(m2, implicants[0])) covered.add(m2);
+                    });
+                }
+            }
+            
+            // Добавляем дополнительные импликанты для полного покрытия
+            const remainingImplicants = primeImplicants.filter(imp => !essentialImplicants.includes(imp));
+            while (covered.size < minterms.length && remainingImplicants.length > 0) {
+                let bestImplicant = null;
+                let maxCovered = 0;
+                
+                for (const imp of remainingImplicants) {
+                    let count = 0;
+                    for (const m of minterms) {
+                        if (!covered.has(m) && isCovered(m, imp)) count++;
+                    }
+                    if (count > maxCovered) {
+                        maxCovered = count;
+                        bestImplicant = imp;
+                    }
+                }
+                
+                if (bestImplicant) {
+                    essentialImplicants.push(bestImplicant);
+                    minterms.forEach(m => {
+                        if (isCovered(m, bestImplicant)) covered.add(m);
+                    });
+                }
+            }
+            
+            // Помечаем существенные импликанты в таблице
+            coverageTable = coverageTable.replace(/<tr>/g, tr => {
+                const impMatch = tr.match(/<span class="implicant">([^<]+)<\/span>/);
+                if (impMatch && essentialImplicants.includes(impMatch[1])) {
+                    return tr.replace('<tr>', '<tr class="essential">');
+                }
+                return tr;
+            });
+            
+            return { essentialImplicants, coverageTable };
+        }
+        
+        function findDifferencePosition(a, b) {
+            let diffPos = -1;
+            for (let i = 0; i < a.length; i++) {
+                if (a[i] !== b[i]) {
+                    if (diffPos !== -1) return -1;
+                    diffPos = i;
+                }
+            }
+            return diffPos;
+        }
+        
+        function isCovered(minterm, implicant) {
+            for (let i = 0; i < minterm.length; i++) {
+                if (implicant[i] !== '-' && implicant[i] !== minterm[i]) {
+                    return false;
+                }
+            }
+            return true;
         }
         
         function formatFormula(formula) {
             return formula
-                .replace(/\^/g, ' ∧ ')
-                .replace(/v/g, ' ∨ ')
-                .replace(/!/g, '¬')
                 .replace(/x1/g, 'x₁')
                 .replace(/x2/g, 'x₂')
                 .replace(/x3/g, 'x₃')
-                .replace(/x4/g, 'x₄');
+                .replace(/x4/g, 'x₄')
+                .replace(/\∧/g, ' ∧ ');
         }
     </script>
 </body>

@@ -7,8 +7,8 @@
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f3ff; /* Светло-лавандовый фон */
-            color: #4a3b76; /* Тёмно-фиолетовый текст */
+            background-color: #f5f3ff;
+            color: #4a3b76;
             margin: 0;
             padding: 20px;
             display: flex;
@@ -18,57 +18,57 @@
             flex-direction: column;
         }
         h1 {
-            color: #6a52ad; /* Лавандовый акцент */
+            color: #6a52ad;
             margin-bottom: 20px;
             font-size: 2.5em;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
         }
         .game-container {
-            background: white; /* Белый контейнер */
+            background: white;
             padding: 25px;
             border-radius: 15px;
             box-shadow: 0 4px 15px rgba(106, 82, 173, 0.1);
-            width: 320px;
-            border: 2px solid #b8a3ff; /* Лавандовая рамка */
+            width: 350px;
+            border: 2px solid #b8a3ff;
             text-align: center;
         }
         label {
             display: block;
             margin-bottom: 10px;
             font-weight: 600;
-            color: #6a52ad; /* Лавандовый акцент */
+            color: #6a52ad;
         }
         input[type="text"] {
             width: 100%;
             padding: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             border: 1px solid #d4c7ff;
             border-radius: 8px;
             font-size: 14px;
-            background-color: #f9f7ff; /* Светло-лавандовый фон */
+            background-color: #f9f7ff;
             color: #4a3b76;
         }
         button {
-            background-color: #8a6de8; /* Лавандовый акцент */
+            background-color: #8a6de8;
             color: white;
             border: none;
-            padding: 12px 20px;
+            padding: 10px 15px;
             border-radius: 8px;
             cursor: pointer;
             font-size: 16px;
             font-weight: 600;
-            width: 100%;
             transition: background-color 0.3s ease;
+            margin: 5px;
         }
         button:hover {
-            background-color: #7a5dd8; /* Темнее лавандовый */
+            background-color: #7a5dd8;
         }
         #result {
             margin-top: 25px;
             padding: 20px;
             background: white;
             border-radius: 10px;
-            width: 320px;
+            width: 350px;
             text-align: center;
             font-size: 16px;
             color: #4a3b76;
@@ -98,13 +98,26 @@
             max-width: 100%;
             height: auto;
             border-radius: 8px;
-            display: none; /* Скрыто по умолчанию */
+            display: none;
         }
         .correct {
-            color: #4caf50; /* Зелёный для правильного ответа */
+            color: #4caf50;
         }
         .incorrect {
-            color: #ff6b6b; /* Красный для неправильного */
+            color: #ff6b6b;
+        }
+        .dnf-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        .dnf-buttons button {
+            padding: 8px 10px;
+            font-size: 14px;
+        }
+        #dnfInput {
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -112,9 +125,23 @@
     <h1>Игра: Угадай ДНФ</h1>
     <div class="game-container">
         <p id="vectorDisplay">Вектор функции: </p>
-        <label for="dnfInput">Введите ДНФ:</label>
-        <input type="text" id="dnfInput" placeholder="Пример: (x1 ∧ ¬x2) ∨ (¬x1 ∧ x2)">
-        <button id="checkButton">Проверить</button>
+        
+        <label>Введите ДНФ:</label>
+        <div class="dnf-buttons">
+            <button onclick="insertSymbol('(')">(</button>
+            <button onclick="insertSymbol(')')">)</button>
+            <button onclick="insertSymbol('∧')">∧</button>
+            <button onclick="insertSymbol('∨')">∨</button>
+            <button onclick="insertSymbol('¬')">¬</button>
+            <button onclick="insertSymbol('x₁')">x₁</button>
+            <button onclick="insertSymbol('x₂')">x₂</button>
+            <button onclick="clearInput()">Очистить</button>
+            <button onclick="backspace()">←</button>
+        </div>
+        
+        <input type="text" id="dnfInput" placeholder="Пример: (x₁ ∧ ¬x₂) ∨ (¬x₁ ∧ x₂)" readonly>
+        
+        <button id="checkButton" style="width: 100%; margin: 0;">Проверить</button>
     </div>
     
     <div id="result">
@@ -134,7 +161,7 @@
 
         // Преобразование вектора в ДНФ
         function vectorToDNF(vector) {
-            const variables = ['x1', 'x2'];
+            const variables = ['x₁', 'x₂'];
             let dnf = [];
             for (let i = 0; i < vector.length; i++) {
                 if (vector[i] === 1) {
@@ -149,6 +176,18 @@
             return dnf.join(' ∨ ');
         }
 
+        // Нормализация формулы для сравнения
+        function normalizeFormula(formula) {
+            return formula
+                .replace(/\s+/g, '') // Удаляем все пробелы
+                .replace(/∧/g, '&')   // Заменяем ∧ на &
+                .replace(/∨/g, '|')   // Заменяем ∨ на |
+                .replace(/¬/g, '!')   // Заменяем ¬ на !
+                .replace(/x₁/g, 'x1') // Заменяем x₁ на x1
+                .replace(/x₂/g, 'x2') // Заменяем x₂ на x2
+                .toLowerCase();       // Приводим к нижнему регистру
+        }
+
         // Инициализация игры
         let currentVector = generateRandomVector();
         let correctDNF = vectorToDNF(currentVector);
@@ -157,22 +196,63 @@
         // Отображение вектора
         document.getElementById('vectorDisplay').textContent = `Вектор функции: [${currentVector.join(', ')}]`;
 
+        // Функции для работы с кнопками ввода
+        function insertSymbol(symbol) {
+            const input = document.getElementById('dnfInput');
+            const startPos = input.selectionStart;
+            const endPos = input.selectionEnd;
+            const currentValue = input.value;
+            
+            input.value = currentValue.substring(0, startPos) + symbol + currentValue.substring(endPos);
+            input.focus();
+            input.setSelectionRange(startPos + symbol.length, startPos + symbol.length);
+        }
+
+        function clearInput() {
+            document.getElementById('dnfInput').value = '';
+            document.getElementById('dnfInput').focus();
+        }
+
+        function backspace() {
+            const input = document.getElementById('dnfInput');
+            const startPos = input.selectionStart;
+            const endPos = input.selectionEnd;
+            const currentValue = input.value;
+            
+            if (startPos === endPos && startPos > 0) {
+                input.value = currentValue.substring(0, startPos - 1) + currentValue.substring(endPos);
+                input.setSelectionRange(startPos - 1, startPos - 1);
+            } else {
+                input.value = currentValue.substring(0, startPos) + currentValue.substring(endPos);
+                input.setSelectionRange(startPos, startPos);
+            }
+            input.focus();
+        }
+
         // Проверка введенной ДНФ
         document.getElementById('checkButton').addEventListener('click', function() {
             const userDNF = document.getElementById('dnfInput').value.trim();
             const resultDiv = document.getElementById('result');
             
-            if (userDNF === correctDNF) {
-                resultImage.src = "https://sun9-9.userapi.com/impg/bp2dGjGJTnIe1riA87WhNTAhOOvIdEXWLY17Bg/tjT4r1A0YjI.jpg?size=512x512&quality=96&sign=369ce60465fa9070dfda3be16e37f971&type=album"; // Изображение для правильного ответа
+            // Нормализуем обе формулы для сравнения
+            const normalizedUserDNF = normalizeFormula(userDNF);
+            const normalizedCorrectDNF = normalizeFormula(correctDNF);
+            
+            console.log("User DNF:", normalizedUserDNF);
+            console.log("Correct DNF:", normalizedCorrectDNF);
+            
+            if (normalizedUserDNF === normalizedCorrectDNF) {
+                resultImage.src = "https://sun9-9.userapi.com/impg/bp2dGjGJTnIe1riA87WhNTAhOOvIdEXWLY17Bg/tjT4r1A0YjI.jpg?size=512x512&quality=96&sign=369ce60465fa9070dfda3be16e37f971&type=album";
                 resultImage.style.display = "block";
                 resultDiv.innerHTML = `
                     <div class="visualization">
                         <img src="https://sun9-9.userapi.com/impg/bp2dGjGJTnIe1riA87WhNTAhOOvIdEXWLY17Bg/tjT4r1A0YjI.jpg?size=512x512&quality=96&sign=369ce60465fa9070dfda3be16e37f971&type=album" alt="Правильно" style="display:block;">
                     </div>
                     <p class="correct">Правильно! 🎉</p>
+                    <p>${correctDNF}</p>
                 `;
             } else {
-                resultImage.src = "https://i.pinimg.com/originals/93/32/c7/9332c708b22cdc5f2df7a3f61e9cc206.webp"; // Изображение для неправильного ответа
+                resultImage.src = "https://i.pinimg.com/originals/93/32/c7/9332c708b22cdc5f2df7a3f61e9cc206.webp";
                 resultImage.style.display = "block";
                 resultDiv.innerHTML = `
                     <div class="visualization">

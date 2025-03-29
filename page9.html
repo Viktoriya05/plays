@@ -109,13 +109,38 @@
             height: auto;
             border-radius: 8px;
             box-shadow: 0 4px 10px rgba(106, 82, 173, 0.15);
-            display: none; /* Скрываем изображение по умолчанию */
+            display: none;
         }
         .info-box {
             background-color: #f0ebff;
             padding: 15px;
             border-radius: 8px;
             margin: 15px 0;
+        }
+        .truth-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+        .truth-table th, .truth-table td {
+            border: 1px solid #d4c7ff;
+            padding: 8px;
+            text-align: center;
+        }
+        .truth-table th {
+            background-color: #e0d6ff;
+            color: #4a3b76;
+        }
+        .truth-table tr:nth-child(even) {
+            background-color: #f9f7ff;
+        }
+        .truth-table tr:hover {
+            background-color: #f0ebff;
+        }
+        .function-value {
+            font-weight: bold;
+            color: #6a52ad;
         }
     </style>
 </head>
@@ -124,7 +149,7 @@
         <h1>Построение СКНФ по вектору функции</h1>
         
         <label for="vectorInput">Введите вектор булевой функции (из 0 и 1):</label>
-        <input type="text" id="vectorInput" placeholder="Например: 0101 (для функции XOR)">
+        <input type="text" id="vectorInput" placeholder="Например: 0101">
         
         <button id="buildButton">Построить СКНФ</button>
         
@@ -167,12 +192,13 @@
             // Построение СКНФ
             const sknf = buildSKNF(vector, variableCount);
             
+            // Генерация таблицы истинности
+            const truthTable = generateTruthTable(vector, variableCount);
+            
             // Создаем изображение только при успешном результате
             let imageHtml = '';
-            if (vector.length <= 16) { // Показываем изображение только для 1-3 переменных
-                const imageUrl =  "https://sun9-4.userapi.com/impg/Qku0MqCkBTWV6e1eVV6yHAGGX-2xe9mDm1DxAA/a1s8Zl7Tti0.jpg?size=478x471&quality=96&sign=089abe3becf4e902a332eaa56a52ec08&c_uniq_tag=2h0Mq1mh2ZISGNTk1br_VgLTXVF-viHJcnkoHxqEFCQ&type=album" ; 
-                                
-                
+            if (vector.length <= 16) {
+                const imageUrl = "https://sun9-4.userapi.com/impg/Qku0MqCkBTWV6e1eVV6yHAGGX-2xe9mDm1DxAA/a1s8Zl7Tti0.jpg?size=478x471&quality=96&sign=089abe3becf4e902a332eaa56a52ec08&c_uniq_tag=2h0Mq1mh2ZISGNTk1br_VgLTXVF-viHJcnkoHxqEFCQ&type=album";
                 imageHtml = `
                     <div class="visualization">
                         <img src="${imageUrl}" alt="Визуализация СКНФ" style="display: block;">
@@ -192,6 +218,9 @@
                 <div class="formula">
                     <p>${formatFormula(sknf)}</p>
                 </div>
+                
+                <h3>Таблица истинности</h3>
+                ${truthTable}
             `;
         });
 
@@ -216,7 +245,48 @@
                 }
             }
             
-            return clauses.length > 0 ? clauses.join(' ∧ ') : '1'; // Если СКНФ пустая (все значения 1)
+            return clauses.length > 0 ? clauses.join(' ∧ ') : '1';
+        }
+        
+        function generateTruthTable(vector, variableCount) {
+            let tableHTML = `
+                <table class="truth-table">
+                    <thead>
+                        <tr>
+            `;
+            
+            // Заголовки столбцов для переменных
+            for (let i = 1; i <= variableCount; i++) {
+                tableHTML += `<th>x<sub>${i}</sub></th>`;
+            }
+            
+            tableHTML += `
+                            <th>f(x)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            // Заполнение таблицы
+            for (let i = 0; i < vector.length; i++) {
+                const binary = i.toString(2).padStart(variableCount, '0');
+                tableHTML += '<tr>';
+                
+                // Значения переменных
+                for (let j = 0; j < variableCount; j++) {
+                    tableHTML += `<td>${binary[j]}</td>`;
+                }
+                
+                // Значение функции
+                tableHTML += `<td class="function-value">${vector[i]}</td></tr>`;
+            }
+            
+            tableHTML += `
+                    </tbody>
+                </table>
+            `;
+            
+            return tableHTML;
         }
         
         function formatFormula(formula) {
